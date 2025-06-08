@@ -1,13 +1,3 @@
-version: "3.9"
-services:
-  agent:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.agent
-  server:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.server
 version: '3.9'
 services:
   acp-server:
@@ -16,6 +6,7 @@ services:
       dockerfile: docker/server.Dockerfile
     ports:
       - "50051:50051"
+
   synthesizer:
     build:
       context: .
@@ -23,6 +14,10 @@ services:
     environment:
       AGENT_ROLE: synthesizer
       ACP_ADDR: acp-server:50051
+      OLLAMA_HOST: host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
   sentinel:
     build:
       context: .
@@ -30,6 +25,10 @@ services:
     environment:
       AGENT_ROLE: sentinel
       ACP_ADDR: acp-server:50051
+      OLLAMA_HOST: host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
   expert:
     build:
       context: .
@@ -37,6 +36,10 @@ services:
     environment:
       AGENT_ROLE: expert
       ACP_ADDR: acp-server:50051
+      OLLAMA_HOST: host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
   observer:
     build:
       context: ./observer

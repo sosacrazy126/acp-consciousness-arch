@@ -1,13 +1,3 @@
-class AgentCore:
-    """Minimal agent core demonstrating basic step behavior."""
-
-    def __init__(self, name: str = "agent"):
-        self.name = name
-
-    def step(self) -> None:
-        """Execute a single agent step."""
-        print(f"{self.name} executing step")
-=======
 import json
 import time
 
@@ -31,7 +21,6 @@ class AgentCore:
 
     def act(self, msg):
         """Simple heuristic action stub."""
-        # This placeholder simply echoes the message back
         reply = {
             "agent_id": self.id,
             "content_type": msg.get("content_type", "text/plain"),

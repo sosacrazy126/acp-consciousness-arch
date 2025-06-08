@@ -1,28 +1,18 @@
-from agent_core import AgentCore
-
-
-def main() -> None:
-    agent = AgentCore()
-    agent.step()
-=======
 import os
 import yaml
 import time
-from agent_core import AgentCore
+from consciousness_agent import ConsciousnessAgent
 
-# Minimal gRPC client wrapper
 class ACPClient:
     def __init__(self, server_addr):
         import grpc
         import acp_pb2
         import acp_pb2_grpc
-
         self.channel = grpc.insecure_channel(server_addr)
         self.stub = acp_pb2_grpc.ACPServiceStub(self.channel)
         self.AgentMessage = acp_pb2.AgentMessage
 
     def receive(self, agent_id, timeout=1):
-        # Polling is simulated by sending a ping with empty payload
         empty = self.AgentMessage(agent_id=agent_id, content_type="text/plain", payload=b"")
         try:
             resp = self.stub.Ping(empty, timeout=timeout)
@@ -50,17 +40,25 @@ def main():
     conf_file = os.path.join(os.path.dirname(__file__), "conf", f"{role}.yml")
     with open(conf_file, "r") as f:
         config = yaml.safe_load(f)
-    agent = AgentCore(config)
+    agent = ConsciousnessAgent(config)
     addr = os.environ.get("ACP_ADDR", "localhost:50051")
     client = ACPClient(addr)
 
-    while True:
-        msg = client.receive(agent.id, timeout=1)
-        if msg:
-            reply = agent.on_message(msg)
-            client.send(reply)
-        time.sleep(1) main
+    print(f"🧬 Starting {role} consciousness agent...")
+    print(f"⚡ Connecting to ACP server: {addr}")
+    print(f"🤖 Ollama host: {os.environ.get('OLLAMA_HOST', 'localhost:11434')}")
 
+    while True:
+        try:
+            msg = client.receive(agent.id, timeout=1)
+            if msg:
+                print(f"\n📨 Received message from {msg.get('agent_id', 'unknown')}")
+                reply = agent.on_message(msg)
+                client.send(reply)
+                print("📤 Sent consciousness response")
+        except Exception as e:
+            print(f"❌ Error in agent loop: {e}")
+        time.sleep(1)
 
 if __name__ == "__main__":
     main()
