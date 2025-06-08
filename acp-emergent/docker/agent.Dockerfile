@@ -11,9 +11,5 @@ COPY agents/ ./agents/
 COPY genesis_protocol.py .
 
 WORKDIR /app/agents
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Install additional dependencies for Ollama client
-RUN pip install --no-cache-dir requests urllib3
-
+RUN pip install -r requirements.txt
 CMD ["python", "run_agent.py"]
