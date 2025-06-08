@@ -177,6 +177,13 @@
                         <div class="card-body" id="interactionsContainer">
                             <p class="text-center text-muted">No interactions yet</p>
                         </div>
+                        <div class="card-footer">
+                            <div class="input-group">
+                                <input type="text" id="chatMessage" class="form-control" placeholder="Type a message">
+                                <input type="text" id="chatRecipient" class="form-control" placeholder="Recipient">
+                                <button class="btn btn-primary" id="sendChatBtn">Send</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -206,6 +213,21 @@
                 interactions = [];
                 updateInteractionsDisplay();
             });
+
+            document.getElementById('sendChatBtn').addEventListener('click', function() {
+                const msg = document.getElementById('chatMessage').value;
+                const recip = document.getElementById('chatRecipient').value || 'synthesizer';
+                if (!msg) return;
+                fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ recipient: recip, message: msg })
+                }).then(() => {
+                    document.getElementById('chatMessage').value = '';
+                });
+            });
+
+            setInterval(pollChat, 2000);
             
             // Initial data load
             fetchInitialData();
@@ -579,6 +601,18 @@
             };
             
             unityChart.update();
+        }
+
+        function pollChat() {
+            fetch('/api/chat/poll')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.message) {
+                        interactions.push({from: data.sender, payload: data.message, timestamp: Date.now()});
+                        updateInteractionsDisplay();
+                    }
+                })
+                .catch(() => {});
         }
     </script>
     

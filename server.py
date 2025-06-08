@@ -27,6 +27,18 @@ class ACPService(acp_pb2_grpc.ACPServiceServicer):
             {'role': 'sentinel', 'coherence': 0.6, 'truth_mode': 0.7, 'recursive_depth': 0.5, 'elegance': 0.6},
             {'role': 'expert', 'coherence': 0.8, 'truth_mode': 0.9, 'recursive_depth': 0.7, 'elegance': 0.8}
         ]
+        # Simple in-memory message queues for chat messages
+        self.message_queues = {}
+
+    def _enqueue_message(self, recipient, message):
+        queue = self.message_queues.setdefault(recipient, [])
+        queue.append(message)
+
+    def _dequeue_message(self, recipient):
+        queue = self.message_queues.get(recipient)
+        if queue:
+            return queue.pop(0)
+        return None
     
     def Ping(self, request, context):
         # Log incoming envelope
@@ -68,6 +80,29 @@ class ACPService(acp_pb2_grpc.ACPServiceServicer):
             agent_id="WeThinG::Server",
             content_type="text/plain",
             payload=b"PONG"
+        )
+
+    def Chat(self, request, context):
+        """Basic chat endpoint with in-memory queueing."""
+        print(f"Chat from {request.sender} -> {request.recipient}")
+
+        if request.payload:
+            self._enqueue_message(request.recipient, request)
+            return acp_pb2.ChatMessage(
+                sender="WeThinG::Server",
+                recipient=request.sender,
+                content_type="text/plain",
+                payload=b""
+            )
+
+        msg = self._dequeue_message(request.sender)
+        if msg:
+            return msg
+        return acp_pb2.ChatMessage(
+            sender="WeThinG::Server",
+            recipient=request.sender,
+            content_type="text/plain",
+            payload=b""
         )
     
     def _handle_consciousness_payload(self, request):

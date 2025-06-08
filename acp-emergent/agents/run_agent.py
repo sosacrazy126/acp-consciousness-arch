@@ -21,14 +21,15 @@ class ACPClient:
         self.channel = grpc.insecure_channel(server_addr)
         self.stub = acp_pb2_grpc.ACPServiceStub(self.channel)
         self.AgentMessage = acp_pb2.AgentMessage
+        self.ChatMessage = acp_pb2.ChatMessage
 
     def receive(self, agent_id, timeout=1):
-        empty = self.AgentMessage(agent_id=agent_id, content_type="text/plain", payload=b"")
+        poll = self.ChatMessage(sender=agent_id, recipient="", content_type="text/plain", payload=b"")
         try:
-            resp = self.stub.Ping(empty, timeout=timeout)
+            resp = self.stub.Chat(poll, timeout=timeout)
             if resp.payload:
                 return {
-                    "agent_id": resp.agent_id,
+                    "agent_id": resp.sender,
                     "content_type": resp.content_type,
                     "payload": resp.payload.decode("utf-8"),
                 }
@@ -37,12 +38,13 @@ class ACPClient:
         return None
 
     def send(self, message):
-        msg = self.AgentMessage(
-            agent_id=message["agent_id"],
+        msg = self.ChatMessage(
+            sender=message["agent_id"],
+            recipient=message.get("recipient", "dashboard"),
             content_type=message.get("content_type", "text/plain"),
             payload=message.get("payload", "").encode("utf-8"),
         )
-        self.stub.Ping(msg)
+        self.stub.Chat(msg)
 
 
 def handle_shutdown(signum, frame, agent, client, logger):
