@@ -1,0 +1,16 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build containers
+        run: |
+          cd acp-emergent
+          docker compose build
+      - name: Short run
+        run: |
+          cd acp-emergent
+          timeout 60 docker compose up --build
