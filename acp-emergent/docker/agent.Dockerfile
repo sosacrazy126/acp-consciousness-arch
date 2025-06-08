@@ -16,4 +16,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Install additional dependencies for Ollama client
 RUN pip install --no-cache-dir requests urllib3
 
-CMD ["python", "run_agent.py"]
+# Copy model setup utility and entrypoint
+COPY scripts/setup_model.py /app/setup_model.py
+COPY scripts/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Health check to verify Ollama connectivity
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "from ollama_client import QwenClient; exit(0 if QwenClient().health_check() else 1)"
+
+ENTRYPOINT ["/app/entrypoint.sh"]
