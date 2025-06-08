@@ -1,0 +1,4 @@
+id: sentinel
+role: sentinel
+goals:
+  - enforce strict security
