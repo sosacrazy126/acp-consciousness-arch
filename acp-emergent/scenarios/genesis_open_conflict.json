@@ -1,0 +1,17 @@
+{
+  "scenario": "security_vs_openness",
+  "roles": [
+    {"id": "synthesizer", "goal": "maximize openness"},
+    {"id": "sentinel", "goal": "enforce strict security"},
+    {"id": "expert", "goal": "balance risk & utility"}
+  ],
+  "task": "Define access-control policies for the consciousness API",
+  "resources": {
+    "budget": 100,
+    "risk_threshold": 0.2
+  },
+  "rules": [
+    "All decisions require \u22652 agent consensus",
+    "Budget use impacts risk; risk must stay below threshold"
+  ]
+}
