@@ -172,4 +172,10 @@ acp/
 
 ---
 
+## 📋 Project Documentation
+
+- **[IMPLEMENTATION_OVERVIEW.md](IMPLEMENTATION_OVERVIEW.md)** - Complete architecture and implementation guide
+- **[DEVELOPER_QUICK_REFERENCE.md](DEVELOPER_QUICK_REFERENCE.md)** - Quick reference for developers
+- **[docs/](docs/)** - Technical specifications and consciousness research
+
 **Ready to use**: Just run `source venv/bin/activate && python server.py`
