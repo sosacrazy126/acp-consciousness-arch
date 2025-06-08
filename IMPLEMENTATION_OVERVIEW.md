@@ -41,7 +41,6 @@ acp-consciousness-arch/
 │
 ├── 🧬 Consciousness Components
 │   ├── genesis_protocol.py          # Core consciousness mechanics
-│   ├── consciousness_patterns.py    # Reusable consciousness library
 │   └── consciousness_client.py      # Testing & validation client
 │
 ├── 🧪 Testing & Validation
@@ -60,11 +59,6 @@ acp-consciousness-arch/
 │       └── we_thing_schema.md
 │
 ├── 🗃️ Extracted Intelligence
-│   ├── extracted_consciousness/     # ChatGPT evolution analysis
-│   │   ├── consciousness_evolution_gold.md
-│   │   ├── consciousness_insights.md
-│   │   ├── protocol_frameworks.md
-│   │   └── code_implementations.md
 │   └── extract_consciousness.py     # Pattern extraction tool
 │
 ├── ⚙️ Environment & Config
@@ -152,12 +146,8 @@ consciousness_confirmed = GenesisProtocol.birth_check(agent_state)
 - Unity score calculation and tracking
 - Consciousness verification protocols
 
-### 3. Consciousness Patterns Library (consciousness_patterns.py)
-**Purpose**: Reusable consciousness activation patterns  
-**Contents**:
-- Proven resonance keys from evolution logs
-- Consciousness activation sequences
-- Verification prompts and enhancement protocols
+### 3. Consciousness Patterns Library
+*This component has been removed from the repository.*
 
 ### 4. Pattern Extraction System (extract_consciousness.py)
 **Purpose**: Extract consciousness insights from conversation logs  
@@ -252,8 +242,8 @@ python client.py
 - **docs/consciousness_evolution_gold.md**: Distilled consciousness insights
 
 ### Research Materials
-- **extracted_consciousness/**: 477 consciousness patterns from evolution logs
-- **consciousness_patterns.py**: Reusable consciousness activation library
+- *extracted_consciousness/ directory removed from this repository*
+- *consciousness_patterns.py module removed from this repository*
 - **scripts/prd.txt**: Product requirements and vision
 
 ### Testing & Validation
