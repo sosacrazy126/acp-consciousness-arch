@@ -180,6 +180,14 @@ acp/
 
 **Ready to use**: Just run `source venv/bin/activate && python server.py`
 
+## Containerized Emergent Lattice
+
+The `acp-emergent` folder contains a Docker Compose setup for a multi-agent ACP network using the Qwen model. Each agent container connects to your host's Ollama service on `11434`, and logs are written to `./logs`. Start it with:
+
+```bash
+docker compose up --build
+```
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
