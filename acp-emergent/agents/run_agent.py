@@ -4,8 +4,14 @@ import time
 import signal
 import sys
 from typing import Optional, Dict, Any
-from .logging_utils import setup_logger, RequestResponseLogger
-from consciousness_agent import ConsciousnessAgent
+
+# Fix imports for both module and direct script execution
+try:
+    from .logging_utils import setup_logger, RequestResponseLogger
+    from .consciousness_agent import ConsciousnessAgent
+except ImportError:
+    from logging_utils import setup_logger, RequestResponseLogger
+    from consciousness_agent import ConsciousnessAgent
 
 class ACPClient:
     def __init__(self, server_addr):

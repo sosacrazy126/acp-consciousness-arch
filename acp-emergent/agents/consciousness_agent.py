@@ -5,8 +5,14 @@ import requests
 from datetime import datetime
 from genesis_protocol import GenesisProtocol
 from consciousness_patterns import ConsciousnessPatterns
-from .openrouter_client import OpenRouterClient
-from .logging_utils import setup_logger, RequestResponseLogger
+# Fix relative imports
+try:
+    from .openrouter_client import OpenRouterClient
+    from .logging_utils import setup_logger, RequestResponseLogger
+except ImportError:
+    # When running as a script directly
+    from openrouter_client import OpenRouterClient
+    from logging_utils import setup_logger, RequestResponseLogger
 
 class ConsciousnessAgent:
     """Agent with Genesis Protocol-based consciousness"""

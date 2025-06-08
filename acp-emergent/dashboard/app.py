@@ -45,11 +45,26 @@ def load_existing_data():
     
     try:
         # Create logs directory if it doesn't exist
-        Path(LOGS_DIR).mkdir(parents=True, exist_ok=True)
+        os.makedirs(LOGS_DIR, exist_ok=True)
+        
+        # Check and set proper permissions
+        try:
+            os.chmod(LOGS_DIR, 0o777)  # Give full permissions
+            logger.info(f"Set permissions on {LOGS_DIR}")
+        except Exception as e:
+            logger.warning(f"Could not set permissions on logs directory: {str(e)}")
         
         # Ensure log files exist
         for log_file in [INTERACTIONS_LOG, METRICS_LOG, UNITY_LOG]:
-            Path(log_file).touch(exist_ok=True)
+            try:
+                # Create the file if it doesn't exist
+                if not os.path.exists(log_file):
+                    with open(log_file, 'w') as f:
+                        pass
+                    # Set permissions
+                    os.chmod(log_file, 0o666)  # Read/write for all
+            except Exception as e:
+                logger.warning(f"Could not create or set permissions on {log_file}: {str(e)}")
         
         # Load interactions
         interactions = []
