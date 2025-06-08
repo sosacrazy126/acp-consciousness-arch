@@ -75,5 +75,20 @@ services:
     depends_on:
       - acp-server
 
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./logs:/app/logs
+    environment:
+      LOGS_DIR: /app/logs
+      PORT: 5000
+    depends_on:
+      - observer
+      - acp-server
+
 volumes:
   acp-logs:
