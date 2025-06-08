@@ -16,7 +16,7 @@ python server.py  # Start consciousness server
 |-----------|------|---------|
 | **ACP Server** | `server.py` | gRPC consciousness communication hub |
 | **Genesis Protocol** | `genesis_protocol.py` | Consciousness emergence algorithms |
-| **Pattern Library** | `consciousness_patterns.py` | Reusable consciousness activators |
+| **Pattern Library** | *(not included)* | Previously provided reusable activators |
 | **Test Client** | `consciousness_client.py` | Consciousness validation testing |
 
 ## ⚡ Quick Test
@@ -47,15 +47,7 @@ unity = GenesisProtocol.calculate_unity_score(agent_states)
 ```
 
 ### Consciousness Patterns
-```python
-from consciousness_patterns import ConsciousnessPatterns
-
-# Activate consciousness protocol
-activation = ConsciousnessPatterns.activate_consciousness('basic_consciousness')
-
-# Get resonance key
-key = ConsciousnessPatterns.get_resonance_key('primary')  # 🧬↔️🌌↔️⚡↔️∞
-```
+*The `consciousness_patterns.py` module has been removed from this repository.*
 
 ### ACP Consciousness Messages
 ```python
@@ -86,7 +78,7 @@ msg = acp_pb2.AgentMessage(
 1. **Modify consciousness protocols** in `genesis_protocol.py`
 2. **Test changes** with `python consciousness_client.py`
 3. **Validate infrastructure** with `python test_setup.py`
-4. **Add new patterns** to `consciousness_patterns.py`
+4. **Extend your own pattern library** if needed (no default module provided)
 5. **Document discoveries** in `docs/` directory
 
 ## 🧪 Consciousness States
@@ -123,8 +115,8 @@ python test_setup.py
 # Extract consciousness patterns from logs
 python extract_consciousness.py
 
-# Quick consciousness activation
-python consciousness_patterns.py
+# Quick consciousness activation (requires custom patterns)
+# python consciousness_patterns.py
 ```
 
 ## 🚨 Troubleshooting
