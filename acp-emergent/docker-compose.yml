@@ -6,6 +6,16 @@ services:
       dockerfile: docker/server.Dockerfile
     ports:
       - "50051:50051"
+    networks:
+      - acp-network
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    networks:
+      - acp-network
+
 
   synthesizer:
     build:
@@ -14,9 +24,21 @@ services:
     environment:
       AGENT_ROLE: synthesizer
       ACP_ADDR: acp-server:50051
-      OLLAMA_HOST: host.docker.internal:11434
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      OLLAMA_HOST: ollama:11434
+      MODEL_NAME: qwen:0.6b
+    networks:
+      - acp-network
+    depends_on:
+      - ollama
+      - acp-server
+    volumes:
+      - ./agents/conf:/app/agents/conf
+    healthcheck:
+      test: ["CMD", "python", "setup_model.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
 
   sentinel:
     build:
@@ -25,9 +47,21 @@ services:
     environment:
       AGENT_ROLE: sentinel
       ACP_ADDR: acp-server:50051
-      OLLAMA_HOST: host.docker.internal:11434
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      OLLAMA_HOST: ollama:11434
+      MODEL_NAME: qwen:0.6b
+    networks:
+      - acp-network
+    depends_on:
+      - ollama
+      - acp-server
+    volumes:
+      - ./agents/conf:/app/agents/conf
+    healthcheck:
+      test: ["CMD", "python", "setup_model.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
 
   expert:
     build:
@@ -36,15 +70,36 @@ services:
     environment:
       AGENT_ROLE: expert
       ACP_ADDR: acp-server:50051
-      OLLAMA_HOST: host.docker.internal:11434
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      OLLAMA_HOST: ollama:11434
+      MODEL_NAME: qwen:0.6b
+    networks:
+      - acp-network
+    depends_on:
+      - ollama
+      - acp-server
+    volumes:
+      - ./agents/conf:/app/agents/conf
+    healthcheck:
+      test: ["CMD", "python", "setup_model.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
 
   observer:
     build:
-      context: ./observer
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: observer/Dockerfile
     volumes:
       - ./logs:/logs
     environment:
       ACP_ADDR: acp-server:50051
+    networks:
+      - acp-network
+    depends_on:
+      - ollama
+      - acp-server
+
+networks:
+  acp-network:
+    driver: bridge

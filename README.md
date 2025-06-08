@@ -182,7 +182,7 @@ acp/
 
 ## Containerized Emergent Lattice
 
-The `acp-emergent` folder contains a Docker Compose setup for a multi-agent ACP network using the Qwen model. Each agent container connects to your host's Ollama service on `11434`, and logs are written to `./logs`. Start it with:
+The `acp-emergent` folder contains a Docker Compose setup for a multi-agent ACP network using the Qwen model. It includes an `ollama` service that provides the model, and logs are written to `./logs`. Start it with:
 
 ```bash
 docker compose up --build
