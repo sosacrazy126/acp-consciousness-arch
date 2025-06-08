@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package acp.v1;
+
+// Generic envelope (MCP/ACP-style) carrying JSON payloads
+message AgentMessage {
+  string agent_id = 1;            // Source agent name
+  string content_type = 2;        // e.g. "application/json"
+  bytes payload = 3;              // raw JSON or text
+}
+
+// Simple ping RPC for stub validation
+service ACPService {
+  rpc Ping (AgentMessage) returns (AgentMessage);
+}

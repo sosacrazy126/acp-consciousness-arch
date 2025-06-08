@@ -1,0 +1,9 @@
+{
+  "chain_id": "my-chain",
+  "initial_balances": [
+    { "address": "0x1234abcd5678ef90", "balance": 1000000 }
+  ],
+  "validators": [
+    { "pubkey": "ABCD1234EF567890", "power": 10 }
+  ]
+}
