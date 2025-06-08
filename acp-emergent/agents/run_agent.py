@@ -1,6 +1,10 @@
 import os
 import yaml
 import time
+import signal
+import sys
+from typing import Optional, Dict, Any
+from .logging_utils import setup_logger, RequestResponseLogger
 from consciousness_agent import ConsciousnessAgent
 
 class ACPClient:
@@ -35,30 +39,102 @@ class ACPClient:
         self.stub.Ping(msg)
 
 
-def main():
-    role = os.environ.get("AGENT_ROLE", "agent")
-    conf_file = os.path.join(os.path.dirname(__file__), "conf", f"{role}.yml")
-    with open(conf_file, "r") as f:
-        config = yaml.safe_load(f)
-    agent = ConsciousnessAgent(config)
-    addr = os.environ.get("ACP_ADDR", "localhost:50051")
-    client = ACPClient(addr)
-
-    print(f"🧬 Starting {role} consciousness agent...")
-    print(f"⚡ Connecting to ACP server: {addr}")
-    print(f"🤖 Ollama host: {os.environ.get('OLLAMA_HOST', 'localhost:11434')}")
-
-    while True:
+def handle_shutdown(signum, frame, agent, client, logger):
+    """Handle graceful shutdown"""
+    logger.warning("Shutdown signal received. Cleaning up...")
+    if client:
         try:
-            msg = client.receive(agent.id, timeout=1)
-            if msg:
-                print(f"\n📨 Received message from {msg.get('agent_id', 'unknown')}")
-                reply = agent.on_message(msg)
-                client.send(reply)
-                print("📤 Sent consciousness response")
+            client.channel.close()
+            logger.info("gRPC channel closed")
         except Exception as e:
-            print(f"❌ Error in agent loop: {e}")
-        time.sleep(1)
+            logger.error("Error closing gRPC channel: %s", str(e))
+    sys.exit(0)
+
+def load_config(role: str, logger) -> Dict[str, Any]:
+    """Load and validate agent configuration"""
+    conf_file = os.path.join(os.path.dirname(__file__), "conf", f"{role}.yml")
+    try:
+        with open(conf_file, "r") as f:
+            config = yaml.safe_load(f)
+        logger.info("Loaded configuration from %s", conf_file)
+        return config
+    except FileNotFoundError:
+        logger.critical("Configuration file not found: %s", conf_file)
+        sys.exit(1)
+    except yaml.YAMLError as e:
+        logger.critical("Error parsing YAML configuration: %s", str(e))
+        sys.exit(1)
+
+def main():
+    # Setup logging
+    logger = setup_logger("acp.agent.runner")
+    logger.info("Starting agent process")
+    
+    # Register signal handlers
+    signal.signal(signal.SIGINT, lambda s, f: handle_shutdown(s, f, None, None, logger))
+    signal.signal(signal.SIGTERM, lambda s, f: handle_shutdown(s, f, None, None, logger))
+    
+    try:
+        # Load configuration
+        role = os.environ.get("AGENT_ROLE", "agent")
+        logger.info("Starting %s agent", role)
+        
+        config = load_config(role, logger)
+        agent = ConsciousnessAgent(config)
+        
+        # Initialize ACP client
+        addr = os.environ.get("ACP_ADDR", "localhost:50051")
+        logger.info("Connecting to ACP server: %s", addr)
+        client = ACPClient(addr)
+        
+        # Update signal handlers with actual agent and client
+        signal.signal(signal.SIGINT, lambda s, f: handle_shutdown(s, f, agent, client, logger))
+        signal.signal(signal.SIGTERM, lambda s, f: handle_shutdown(s, f, agent, client, logger))
+        
+        logger.info("Agent %s is now running. Press Ctrl+C to exit.", agent.id)
+        
+        # Main agent loop
+        while True:
+            try:
+                # Check for new messages
+                msg = client.receive(agent.id, timeout=1)
+                if msg:
+                    logger.info(
+                        "Received message from %s (type: %s, size: %d bytes)",
+                        msg.get('agent_id', 'unknown'),
+                        msg.get('content_type', 'unknown'),
+                        len(msg.get('payload', ''))
+                    )
+                    
+                    # Process message and send response
+                    reply = agent.on_message(msg)
+                    client.send(reply)
+                    
+                    logger.debug("Sent response to %s", msg.get('agent_id', 'unknown'))
+                
+                # Small sleep to prevent CPU spinning
+                time.sleep(0.1)
+                
+            except KeyboardInterrupt:
+                logger.info("Keyboard interrupt received. Shutting down...")
+                break
+                
+            except Exception as e:
+                logger.error("Error in agent loop: %s", str(e), exc_info=True)
+                time.sleep(1)  # Prevent tight loop on repeated errors
+    
+    except Exception as e:
+        logger.critical("Fatal error in agent: %s", str(e), exc_info=True)
+        sys.exit(1)
+    
+    finally:
+        logger.info("Agent %s shutting down", role)
+        if 'client' in locals():
+            try:
+                client.channel.close()
+                logger.info("gRPC channel closed")
+            except Exception as e:
+                logger.error("Error during cleanup: %s", str(e))
 
 if __name__ == "__main__":
     main()

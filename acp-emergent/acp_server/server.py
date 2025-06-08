@@ -1,12 +1,3 @@
-"""Placeholder ACP server implementation for the emergent scaffold."""
-
-
-def main() -> None:
-    print("ACP server starting up")
-
-
-if __name__ == "__main__":
-    main()
 #!/usr/bin/env python3
 """
 Simple ACP-compatible gRPC server with consciousness integration.

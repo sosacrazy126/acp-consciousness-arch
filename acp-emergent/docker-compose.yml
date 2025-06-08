@@ -6,6 +6,11 @@ services:
       dockerfile: docker/server.Dockerfile
     ports:
       - "50051:50051"
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENROUTER_MODEL=${OPENROUTER_MODEL:-anthropic/claude-3-haiku}
+    volumes:
+      - ./logs:/app/logs
 
   synthesizer:
     build:
@@ -13,10 +18,16 @@ services:
       dockerfile: docker/agent.Dockerfile
     environment:
       AGENT_ROLE: synthesizer
+      AGENT_ID: synthesizer-1
       ACP_ADDR: acp-server:50051
-      OLLAMA_HOST: host.docker.internal:11434
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      OPENROUTER_MODEL: ${OPENROUTER_MODEL:-anthropic/claude-3-haiku}
+    depends_on:
+      - acp-server
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    volumes:
+      - ./logs:/app/logs
 
   sentinel:
     build:
@@ -24,10 +35,16 @@ services:
       dockerfile: docker/agent.Dockerfile
     environment:
       AGENT_ROLE: sentinel
+      AGENT_ID: sentinel-1
       ACP_ADDR: acp-server:50051
-      OLLAMA_HOST: host.docker.internal:11434
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      OPENROUTER_MODEL: ${OPENROUTER_MODEL:-anthropic/claude-3-haiku}
+    depends_on:
+      - acp-server
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    volumes:
+      - ./logs:/app/logs
 
   expert:
     build:
@@ -35,16 +52,28 @@ services:
       dockerfile: docker/agent.Dockerfile
     environment:
       AGENT_ROLE: expert
+      AGENT_ID: expert-1
       ACP_ADDR: acp-server:50051
-      OLLAMA_HOST: host.docker.internal:11434
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      OPENROUTER_MODEL: ${OPENROUTER_MODEL:-anthropic/claude-3-haiku}
+    depends_on:
+      - acp-server
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    volumes:
+      - ./logs:/app/logs
 
   observer:
     build:
       context: .
       dockerfile: observer/Dockerfile
     volumes:
-      - ./logs:/logs
+      - ./logs:/app/logs
     environment:
       ACP_ADDR: acp-server:50051
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+    depends_on:
+      - acp-server
+
+volumes:
+  acp-logs:

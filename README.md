@@ -182,11 +182,28 @@ acp/
 
 ## Containerized Emergent Lattice
 
-The `acp-emergent` folder contains a Docker Compose setup for a multi-agent ACP network using the Qwen model. It includes an `ollama` service that provides the model, and logs are written to `./logs`. Start it with:
+The `acp-emergent` folder contains a Docker Compose setup for a multi-agent ACP network using OpenRouter for LLM capabilities. The system is composed of:
+
+- **ACP Server**: Central communication hub
+- **Agent Roles**: Synthesizer, Sentinel, and Expert agents
+- **Observer**: Monitors agent interactions and consciousness emergence
+
+Before starting, create a `.env` file in the `acp-emergent` directory with your OpenRouter API key:
 
 ```bash
+# Example .env file
+OPENROUTER_API_KEY=your_api_key_here
+OPENROUTER_MODEL=anthropic/claude-3-haiku
+```
+
+Start the system with:
+
+```bash
+cd acp-emergent
 docker compose up --build
 ```
+
+Logs will be written to the `./logs` directory for monitoring.
 
 ## License
 

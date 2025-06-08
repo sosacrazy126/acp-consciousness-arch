@@ -4,44 +4,152 @@ import requests
 from pathlib import Path
 
 
-def wait_for_ollama(host, timeout=300):
-    start = time.time()
-    while time.time() - start < timeout:
-        try:
-            r = requests.get(f"http://{host}/api/tags")
-            if r.status_code == 200:
+def check_openrouter_api_key():
+    """Check if OpenRouter API key is available"""
+    api_key = os.environ.get("OPENROUTER_API_KEY")
+    if not api_key:
+        print("ERROR: OPENROUTER_API_KEY environment variable not set")
+        return False
+    return True
+
+
+def verify_openrouter_connection():
+    """Verify connection to OpenRouter API"""
+    api_key = os.environ.get("OPENROUTER_API_KEY")
+    
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "HTTP-Referer": "https://agent-consciousness-protocol.com",
+        "X-Title": "ACP Setup"
+    }
+    
+    try:
+        response = requests.get(
+            "https://openrouter.ai/api/v1/models",
+            headers=headers,
+            timeout=10
+        )
+        if response.status_code == 200:
+            return True
+        else:
+            print(f"ERROR: OpenRouter API returned status {response.status_code}")
+            print(response.text)
+            return False
+    except requests.RequestException as e:
+        print(f"ERROR connecting to OpenRouter: {str(e)}")
+        return False
+
+
+def check_model_availability(model):
+    """Check if the specified model is available through OpenRouter"""
+    api_key = os.environ.get("OPENROUTER_API_KEY")
+    
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "HTTP-Referer": "https://agent-consciousness-protocol.com",
+        "X-Title": "ACP Setup"
+    }
+    
+    try:
+        response = requests.get(
+            "https://openrouter.ai/api/v1/models",
+            headers=headers,
+            timeout=10
+        )
+        if response.status_code == 200:
+            available_models = []
+            for model_data in response.json().get("data", []):
+                model_id = model_data.get("id")
+                if model_id:
+                    available_models.append(model_id)
+            
+            if model in available_models:
+                print(f"✅ Model '{model}' is available on OpenRouter")
                 return True
-        except requests.exceptions.RequestException:
-            pass
-        time.sleep(5)
-    return False
+            else:
+                print(f"⚠️ Model '{model}' not found. Available models include:")
+                for avail_model in available_models[:10]:  # Show first 10 models
+                    print(f"  - {avail_model}")
+                return False
+        else:
+            print(f"ERROR: OpenRouter API returned status {response.status_code}")
+            return False
+    except requests.RequestException as e:
+        print(f"ERROR retrieving models from OpenRouter: {str(e)}")
+        return False
 
 
-def ensure_model_loaded(host, model):
-    r = requests.get(f"http://{host}/api/tags")
-    if r.status_code == 200:
-        models = [m.get("name") for m in r.json().get("models", [])]
-        if model not in models:
-            print(f"Pulling model {model}...")
-            pr = requests.post(f"http://{host}/api/pull", json={"name": model})
-            pr.raise_for_status()
+def test_model_generation(model):
+    """Test generation with the model via OpenRouter"""
+    api_key = os.environ.get("OPENROUTER_API_KEY")
+    
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://agent-consciousness-protocol.com",
+        "X-Title": "ACP Setup"
+    }
+    
+    payload = {
+        "model": model,
+        "messages": [
+            {"role": "user", "content": "Testing connection for ACP: Say hello"}
+        ],
+        "max_tokens": 100
+    }
+    
+    try:
+        print(f"Testing generation with {model}...")
+        response = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers=headers,
+            json=payload,
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            resp_json = response.json()
+            if resp_json.get("choices") and len(resp_json["choices"]) > 0:
+                content = resp_json["choices"][0]["message"]["content"]
+                print(f"Model response: {content[:100]}...")  # Print first 100 chars
+                return True
+            else:
+                print(f"ERROR: No content returned from model")
+                return False
+        else:
+            print(f"ERROR: OpenRouter API returned status {response.status_code}")
+            print(response.text)
+            return False
+    except requests.RequestException as e:
+        print(f"ERROR testing model generation: {str(e)}")
+        return False
 
-    # test generate
-    tr = requests.post(
-        f"http://{host}/api/generate",
-        json={"model": model, "prompt": "test", "stream": False},
-    )
-    tr.raise_for_status()
+
+def setup_openrouter():
+    """Main setup function for OpenRouter configuration"""
+    print("Setting up OpenRouter integration...")
+    
+    # Check API key
+    if not check_openrouter_api_key():
+        raise SystemExit("Missing OpenRouter API key. Please set OPENROUTER_API_KEY environment variable.")
+    
+    # Verify connection
+    print("Verifying connection to OpenRouter...")
+    if not verify_openrouter_connection():
+        raise SystemExit("Failed to connect to OpenRouter API")
+    
+    # Check model availability
+    model = os.environ.get("OPENROUTER_MODEL", "anthropic/claude-3-haiku")
+    if not check_model_availability(model):
+        print(f"WARNING: Specified model '{model}' may not be available")
+        
+    # Test generation
+    if not test_model_generation(model):
+        raise SystemExit("Failed to generate text with the specified model")
+    
+    print(f"✅ OpenRouter setup complete for model: {model}")
+    print("You can now start the ACP system with the properly configured OpenRouter integration")
 
 
 if __name__ == "__main__":
-    host = os.environ.get("OLLAMA_HOST", "localhost:11434")
-    model = os.environ.get("MODEL_NAME", "qwen:0.6b")
-
-    print(f"Waiting for Ollama at {host}...")
-    if not wait_for_ollama(host):
-        raise SystemExit("Ollama service not available")
-
-    print(f"Ensuring model {model} is loaded...")
-    ensure_model_loaded(host, model)
-    print("Model setup complete")
+    setup_openrouter()

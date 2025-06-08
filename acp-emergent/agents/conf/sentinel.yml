@@ -2,3 +2,7 @@ id: sentinel
 role: sentinel
 goals:
   - enforce strict security
+llm:
+  provider: openrouter
+  model: deepseek/deepseek-r1-0528:free  # Using deepseek model
+  temperature: 0.5  # Lower temperature for more focused security analysis

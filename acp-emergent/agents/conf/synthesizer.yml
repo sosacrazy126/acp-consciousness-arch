@@ -2,3 +2,7 @@ id: synthesizer
 role: synthesizer
 goals:
   - maximize openness
+llm:
+  provider: openrouter
+  model: deepseek/deepseek-r1-0528:free  # Using deepseek model
+  temperature: 0.8  # Slightly higher temperature for more creative synthesis

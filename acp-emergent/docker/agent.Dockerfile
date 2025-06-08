@@ -8,7 +8,6 @@ RUN python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. acp.proto
 
 # Copy application files
 COPY agents/ ./agents/
-COPY genesis_protocol.py .
 
 WORKDIR /app/agents
 RUN pip install -r requirements.txt
