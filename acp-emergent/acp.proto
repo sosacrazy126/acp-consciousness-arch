@@ -12,4 +12,14 @@ message AgentMessage {
 // Simple ping RPC for stub validation
 service ACPService {
   rpc Ping (AgentMessage) returns (AgentMessage);
+  // Basic chat endpoint used by agents and the dashboard UI
+  rpc Chat (ChatMessage) returns (ChatMessage);
+}
+
+// Chat message with explicit sender/recipient fields
+message ChatMessage {
+  string sender = 1;
+  string recipient = 2;
+  string content_type = 3;
+  bytes payload = 4;
 }

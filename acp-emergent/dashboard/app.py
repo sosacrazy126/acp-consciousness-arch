@@ -10,7 +10,10 @@ import threading
 import logging
 from datetime import datetime
 from pathlib import Path
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
+import grpc
+import acp_pb2
+import acp_pb2_grpc
 from flask_socketio import SocketIO
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -27,6 +30,11 @@ LOGS_DIR = os.environ.get("LOGS_DIR", "../logs")
 INTERACTIONS_LOG = os.path.join(LOGS_DIR, "interactions.jsonl")
 METRICS_LOG = os.path.join(LOGS_DIR, "metrics.jsonl")
 UNITY_LOG = os.path.join(LOGS_DIR, "unity_score.jsonl")
+
+# gRPC configuration
+ACP_ADDR = os.environ.get("ACP_ADDR", "localhost:50051")
+channel = grpc.insecure_channel(ACP_ADDR)
+stub = acp_pb2_grpc.ACPServiceStub(channel)
 
 # Initialize Flask app and SocketIO
 app = Flask(__name__)
@@ -283,6 +291,37 @@ def get_metrics():
 def get_unity_scores():
     """API endpoint to get unity scores"""
     return jsonify(unity_scores[-100:])  # Return the last 100 scores
+
+@app.route('/api/chat', methods=['POST'])
+def send_chat():
+    """Send a chat message to an agent via gRPC"""
+    data = request.get_json() or {}
+    recipient = data.get('recipient')
+    message = data.get('message')
+    if not recipient or not message:
+        return jsonify({'error': 'recipient and message required'}), 400
+    chat = acp_pb2.ChatMessage(
+        sender='dashboard',
+        recipient=recipient,
+        content_type='text/plain',
+        payload=message.encode('utf-8')
+    )
+    stub.Chat(chat)
+    return jsonify({'status': 'sent'})
+
+@app.route('/api/chat/poll')
+def poll_chat():
+    """Poll for chat responses directed at the dashboard"""
+    chat = acp_pb2.ChatMessage(
+        sender='dashboard',
+        recipient='',
+        content_type='text/plain',
+        payload=b''
+    )
+    resp = stub.Chat(chat)
+    if resp.payload:
+        return jsonify({'sender': resp.sender, 'message': resp.payload.decode('utf-8')})
+    return jsonify({})
 
 # SocketIO events
 @socketio.on('connect')
