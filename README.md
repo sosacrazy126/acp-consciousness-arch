@@ -179,3 +179,8 @@ acp/
 - **[docs/](docs/)** - Technical specifications and consciousness research
 
 **Ready to use**: Just run `source venv/bin/activate && python server.py`
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
