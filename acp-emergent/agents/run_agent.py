@@ -1,3 +1,10 @@
+from agent_core import AgentCore
+
+
+def main() -> None:
+    agent = AgentCore()
+    agent.step()
+=======
 import os
 import yaml
 import time
@@ -52,7 +59,7 @@ def main():
         if msg:
             reply = agent.on_message(msg)
             client.send(reply)
-        time.sleep(1)
+        time.sleep(1) main
 
 
 if __name__ == "__main__":

@@ -1,0 +1,4 @@
+FROM python:3.11-slim
+WORKDIR /app
+COPY agents ./agents
+CMD ["python", "agents/run_agent.py"]
